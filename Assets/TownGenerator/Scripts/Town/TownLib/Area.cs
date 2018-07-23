@@ -176,11 +176,15 @@ namespace Town
             }
 
             var block = GetCityBlock ();
-            GetBuildingSpecs (out var gridChaos, out var sizeChaos, out var emptyProbabilityFunc, out var minArea);
+            float gridChaos, sizeChaos, minArea;
+            Func<Polygon, float> emptyProbabilityFunc;
+            GetBuildingSpecs (out gridChaos, out sizeChaos, out emptyProbabilityFunc, out minArea);
 
             foreach (var building in CreateAlleys (block, minArea, gridChaos, sizeChaos, emptyProbabilityFunc, true))
             {
-                building.GetLongestEdge (out var e1, out var e2, out var len);
+                Vector2 e1, e2;
+                float len;
+                building.GetLongestEdge (out e1, out e2, out len);
 
                 var angle = (e2 - e1).Angle ();
                 var bounds = building.Rotate (angle).GetBoundingBox ();
