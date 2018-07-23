@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using UnityEngine;
 namespace Town.Geom
 {
     public class Edge : IEquatable<Edge>
@@ -36,11 +36,11 @@ namespace Town.Geom
 
         public bool Equals(Edge other)
         {
-            if (Object.ReferenceEquals(null, other))
+            if (System.Object.ReferenceEquals(null, other))
             {
                 return false;
             }
-            if (Object.ReferenceEquals(this, other))
+            if (System.Object.ReferenceEquals(this, other))
             {
                 return true;
             }
@@ -50,11 +50,11 @@ namespace Town.Geom
 
         public override bool Equals(object obj)
         {
-            if (Object.ReferenceEquals(null, obj))
+            if (System.Object.ReferenceEquals(null, obj))
             {
                 return false;
             }
-            if (Object.ReferenceEquals(this, obj))
+            if (System.Object.ReferenceEquals(this, obj))
             {
                 return true;
             }
@@ -80,17 +80,17 @@ namespace Town.Geom
     {
         public bool Equals(Edge x, Edge y)
         {
-            if (Object.ReferenceEquals(null, x))
+            if (System.Object.ReferenceEquals(null, x))
             {
                 return false;
             }
 
-            if (Object.ReferenceEquals(null, y))
+            if (System.Object.ReferenceEquals(null, y))
             {
                 return false;
             }
 
-            if (Object.ReferenceEquals(x, y))
+            if (System.Object.ReferenceEquals(x, y))
             {
                 return true;
             }

@@ -1,4 +1,5 @@
-﻿namespace Town.Geom
+﻿using UnityEngine;
+namespace Town.Geom
 {
     public struct Rectangle
     {

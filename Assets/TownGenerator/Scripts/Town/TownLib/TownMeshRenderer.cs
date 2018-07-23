@@ -170,7 +170,7 @@ namespace Town
             Cube cube;
             foreach (var road in geometry.Roads)
             {
-                Geom.Vector2 last = new Geom.Vector2 (0, 0);
+                Vector2 last = new Vector2 (0, 0);
                 foreach (var current in road)
                 {
                     if (last.x != 0 && last.y != 0)
@@ -198,7 +198,7 @@ namespace Town
             Walls = new GameObject ("Walls");
             Walls.transform.parent = child;
             Walls.transform.localPosition = Vector3.zero;
-            var replacedGates = new List<Geom.Vector2> ();
+            var replacedGates = new List<Vector2> ();
             foreach (var wall in geometry.Walls)
             {
                 var start = wall.A;
@@ -207,7 +207,7 @@ namespace Town
                 if (geometry.Gates.Contains (start))
                 {
                     replacedGates.Add (start);
-                    start = start + Geom.Vector2.Scale (end - start, 0.3f);
+                    start = start + GeometryHelpers.Scale (end - start, 0.3f);
                     wall.A = start;
                     geometry.Gates.Add (start);
                 }
@@ -215,7 +215,7 @@ namespace Town
                 if (geometry.Gates.Contains (end))
                 {
                     replacedGates.Add (end);
-                    end = end - Geom.Vector2.Scale (end - start, 0.3f);
+                    end = end - GeometryHelpers.Scale (end - start, 0.3f);
                     wall.B = end;
                     geometry.Gates.Add (end);
                 }

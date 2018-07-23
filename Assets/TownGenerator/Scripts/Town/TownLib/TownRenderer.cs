@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 using Town.Geom;
-
+using UnityEngine;
 namespace Town
 {
     public class TownRenderer
@@ -109,7 +109,7 @@ namespace Town
                 if (geometry.Gates.Contains (start))
                 {
                     replacedGates.Add (start);
-                    start = start + Vector2.Scale (end - start, 0.3f);
+                    start = start + GeometryHelpers.Scale (end - start, 0.3f);
                     wall.A = start;
                     geometry.Gates.Add (start);
                 }
@@ -117,7 +117,7 @@ namespace Town
                 if (geometry.Gates.Contains (end))
                 {
                     replacedGates.Add (end);
-                    end = end - Vector2.Scale (end - start, 0.3f);
+                    end = end - GeometryHelpers.Scale (end - start, 0.3f);
                     wall.B = end;
                     geometry.Gates.Add (end);
                 }

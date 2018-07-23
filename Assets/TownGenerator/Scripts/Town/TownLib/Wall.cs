@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Town.Geom;
-
+using UnityEngine;
 namespace Town
 {
     public class Wall
@@ -56,7 +56,7 @@ namespace Town
             var possibleGates = allowedTowerPositions
                 .Where (v => cityPatches.Count (cp => cp.Shape.Vertices.Contains (v)) > 1)
                 .Except (illegalGatePositions)
-                .OrderByDescending (v => (_town.Castle.Patch.Center - v).Length)
+                .OrderByDescending (v => (_town.Castle.Patch.Center - v).magnitude)
                 .ToList ();
 
             var towers = Circumference.ToList ();
@@ -88,7 +88,7 @@ namespace Town
                         var farthest = possibleSplitPoints.OrderByDescending (p =>
                         {
                             var dir = p - newGate;
-                            return Vector2.Dot (dir, outPoint) / dir.Length;
+                            return Vector2.Dot (dir, outPoint) / dir.magnitude;
                         }).First ();
 
                         var newPatches = neighbour.Shape.Split (newGate, farthest).Select (p => Patch.FromPolygon (_town, p)).ToList ();

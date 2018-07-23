@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Town.Geom;
 using Random = Utils.Random;
-
+using UnityEngine;
 namespace Town
 {
     public class Town
@@ -109,7 +109,7 @@ namespace Town
                 Patches.Add (Patch.FromRegion (this, region));
             }
 
-            var patchesInTown = Patches.OrderBy (p => (Center - p.Center).Length).Take (NumPatches).ToList ();
+            var patchesInTown = Patches.OrderBy (p => (Center - p.Center).magnitude).Take (NumPatches).ToList ();
 
             // Find random patch at the outside of town to place water
             if (Options.Water)
@@ -118,7 +118,8 @@ namespace Town
                     .OrderBy (p => Random.value).First ();
                 firstWaterPatch.Water = true;
 
-                var waterDirection = Vector2.Normalize (firstWaterPatch.Center - Center);
+                Vector2 waterDirection = (firstWaterPatch.Center - Center).normalized;
+ 
 
                 var toCheck = new List<Patch> { firstWaterPatch };
                 while (toCheck.Any ())
@@ -127,7 +128,7 @@ namespace Town
                     toCheck.RemoveAt (0);
 
                     var waterPatches = checking.GetAllNeighbours ().Except (patchesInTown)
-                        .Where (n => Math.Abs ((Center - n.Center).AngleComparedTo (waterDirection)) < Math.PI / 4)
+                        .Where (n => Math.Abs (GeometryHelpers.AngleComparedTo(Center - n.Center, waterDirection)) < Math.PI / 4)
                         .Where (n => !n.Water).ToList ();
                     foreach (var waterPatch in waterPatches)
                     {
@@ -138,7 +139,7 @@ namespace Town
 
             }
 
-            patchesInTown = Patches.Where (p => !p.Water).OrderBy (p => (Center - p.Center).Length).Take (NumPatches)
+            patchesInTown = Patches.Where (p => !p.Water).OrderBy (p => (Center - p.Center).magnitude).Take (NumPatches)
                 .ToList ();
 
             foreach (var patch in patchesInTown)
@@ -175,7 +176,7 @@ namespace Town
                 var point = vertices.Vertices[i];
                 var prev = vertices.GetPreviousVertex (point);
                 var next = vertices.GetNextVertex (point);
-                var smoothed = Vector2.SmoothVertex (point, prev, next, smoothAmount);
+                var smoothed = GeometryHelpers.SmoothVertex (point, prev, next, smoothAmount);
 
                 var affected = Patches.Where (p => p.Shape.Vertices.Contains (point)).ToList ();
                 foreach (var patch in affected)
@@ -199,11 +200,11 @@ namespace Town
                     var p0 = patch.Shape.Vertices[i];
                     var p1 = patch.Shape.Vertices[(i + 1) % patch.Shape.Vertices.Count];
 
-                    if (p0 != p1 && (p0 - p1).Length < 8)
+                    if (p0 != p1 && (p0 - p1).magnitude < 8)
                     {
                         var shapesWithPoint = Patches.Where (p => p.Shape.Vertices.Contains (p1)).Select (p => p.Shape);
 
-                        var newP0 = Vector2.Scale (p0 + p1, 0.5f);
+                        var newP0 = GeometryHelpers.Scale (p0 + p1, 0.5f);
 
                         foreach (var polygon in shapesWithPoint)
                         {
@@ -292,7 +293,7 @@ namespace Town
 
             foreach (var gate in Gates.ToList ())
             {
-                var endPoint = Market.Shape.Vertices.OrderBy (v => (gate - v).Length).First ();
+                var endPoint = Market.Shape.Vertices.OrderBy (v => (gate - v).magnitude).First ();
 
                 var street = topology.BuildPath (gate, endPoint, topology.Outer);
                 if (street != null)
@@ -302,9 +303,9 @@ namespace Town
 
                     if (CityWall.Gates.Contains (gate))
                     {
-                        var direction = Vector2.Scale (gate - Center, 100000);
+                        var direction = GeometryHelpers.Scale (gate - Center, 100000);
 
-                        var start = topology.Node2V.Values.OrderBy (v => (v - direction).Length).First ();
+                        var start = topology.Node2V.Values.OrderBy (v => (v - direction).magnitude).First ();
 
                         var road = topology.BuildPath (start, gate, topology.Inner);
                         if (road == null)
@@ -469,7 +470,7 @@ namespace Town
 
             Castle.Patch.Area = new CastleArea (Castle.Patch);
         }
-
+        //Plots nPatches * 8 points in a circle of radius 10 + 3 * nPatches of decreasing density towards edge
         private IEnumerable<Vector2> GetVoronoiPoints (int nPatches, Vector2 center)
         {
             var sa = Random.value * 2 * Math.PI;
@@ -478,7 +479,7 @@ namespace Town
             {
                 var a = sa + Math.Sqrt (i) * 5;
                 var r = (i == 0 ? 0 : 10 + i * (2 + Random.value));
-                yield return new Vector2 (Math.Cos (a) * r, Math.Sin (a) * r) + center;
+                yield return new Vector2 ((float)(Math.Cos (a) * r), (float)(Math.Sin (a) * r)) + center;
             }
         }
 

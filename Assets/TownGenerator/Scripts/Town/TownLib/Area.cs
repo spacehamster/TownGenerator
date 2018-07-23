@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Town.Geom;
+using UnityEngine;
 using Random = Utils.Random;
 
 namespace Town
@@ -59,11 +60,11 @@ namespace Town
             minArea = 5 + 30 * random.value * random.value;
             gridChaos = 0.4f + random.value * 0.02f;
             sizeChaos = 1f;
-            var closestWallPoint = Patch.Town.CityWall.Circumference.OrderBy (p => (p - Patch.Center).Length).First ();
-            var centerDistance = (Patch.Center - closestWallPoint).Length;
+            var closestWallPoint = Patch.Town.CityWall.Circumference.OrderBy (p => (p - Patch.Center).magnitude).First ();
+            var centerDistance = (Patch.Center - closestWallPoint).magnitude;
             emptyProbabilityFunc = p =>
             {
-                var distanceToWall = (p.Center - closestWallPoint).Length;
+                var distanceToWall = (p.Center - closestWallPoint).magnitude;
                 var normalizedDistanceSq = (float) Math.Pow (distanceToWall / (1.5f * centerDistance), 3);
                 return Math.Max (Math.Min (normalizedDistanceSq, 0.95f), 0.05f);
             };
@@ -127,11 +128,11 @@ namespace Town
 
         private IEnumerable<Polygon> CreateAlleys (Polygon block, float minArea, float gridChaos, float sizeChaos, Func<Polygon, float> emptyProbabilityFunc, bool split, int levels = 0)
         {
-            Vector2 point = Vector2.Zero;
+            Vector2 point = Vector2.zero;
             var length = float.MinValue;
             block.ForEachEdge ((p1, p2, index) =>
             {
-                var len = (p1 - p2).Length;
+                var len = (p1 - p2).magnitude;
                 if (len > length)
                 {
                     length = len;
@@ -186,7 +187,7 @@ namespace Town
                 float len;
                 building.GetLongestEdge (out e1, out e2, out len);
 
-                var angle = (e2 - e1).Angle ();
+                var angle = GeometryHelpers.Angle(e2 - e1);
                 var bounds = building.Rotate (angle).GetBoundingBox ();
 
                 var hwRatio = bounds.Height / bounds.Width;

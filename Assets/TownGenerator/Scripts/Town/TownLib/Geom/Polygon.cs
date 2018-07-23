@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using ClipperLib;
+using UnityEngine;
+using static Town.Geom.GeometryHelpers;
 
 namespace Town.Geom
 {
@@ -123,7 +125,7 @@ namespace Town.Geom
             var sum = new Vector2 ();
             Vertices.ForEach (v => sum += v);
 
-            sum = Vector2.Scale (sum, 1f / Vertices.Count);
+            sum = GeometryHelpers.Scale (sum, 1f / Vertices.Count);
             return sum;
         }
 
@@ -211,14 +213,14 @@ namespace Town.Geom
 
         public void GetLongestEdge (out Vector2 start, out Vector2 end, out float length)
         {
-            var e1 = Vector2.Zero;
-            var e2 = Vector2.Zero;
+            var e1 = Vector2.zero;
+            var e2 = Vector2.zero;
 
             var len = float.MinValue;
 
             ForEachEdge ((p1, p2, i) =>
             {
-                var l = (p1 - p2).Length;
+                var l = (p1 - p2).magnitude;
                 if (l > len)
                 {
                     len = l;
@@ -255,7 +257,7 @@ namespace Town.Geom
                 var amount = shrinkAmounts[index];
                 if (amount > 0)
                 {
-                    var n = Vector2.Scale (Vector2.Normalize (Vector2.Rotate90 (p2 - p1)), amount);
+                    var n = GeometryHelpers.Scale (GeometryHelpers.Normalize (GeometryHelpers.Rotate90 (p2 - p1)), amount);
                     newPoly = newPoly.Cut (p1 + n, p2 + n, 0).First ();
                 }
             });
@@ -275,7 +277,7 @@ namespace Town.Geom
                 }
                 else
                 {
-                    var n = Vector2.Scale (Vector2.Normalize (Vector2.Rotate90 (p2 - p1)), amount);
+                    var n = GeometryHelpers.Scale (GeometryHelpers.Normalize (GeometryHelpers.Rotate90 (p2 - p1)), amount);
                     newPoly.Vertices.Add (p1 + n);
                     newPoly.Vertices.Add (p2 + n);
                 }
@@ -312,7 +314,7 @@ namespace Town.Geom
                         var dy2 = p22.y - y2;
 
                         var intersect = GeometryHelpers.IntersectLines (x1, y1, dx1, dy1, x2, y2, dx2, dy2);
-                        if (intersect != null && intersect.x > Delta && intersect.x < (1 - Delta) && intersect.y > Delta && intersect.y < (1 - Delta))
+                        if (intersect.x > Delta && intersect.x < (1 - Delta) && intersect.y > Delta && intersect.y < (1 - Delta))
                         {
                             var pn = new Vector2 (x1 + dx1 * intersect.x, y1 + dy1 * intersect.x);
                             newPoly.Vertices.Insert (j + 1, pn);
@@ -393,7 +395,7 @@ namespace Town.Geom
                 var dy2 = v1.y - y2;
 
                 var t = GeometryHelpers.IntersectLines (x1, y1, dx1, dy1, x2, y2, dx2, dy2);
-                if (t.IsValid && t.y >= 0 && t.y <= 1)
+                if (t.y >= 0 && t.y <= 1)
                 {
                     switch (count)
                     {
@@ -412,8 +414,8 @@ namespace Town.Geom
 
             if (count == 2)
             {
-                var point1 = p1 + Vector2.Scale (p2 - p1, ratio1);
-                var point2 = p1 + Vector2.Scale (p2 - p1, ratio2);
+                var point1 = p1 + GeometryHelpers.Scale (p2 - p1, ratio1);
+                var point2 = p1 + GeometryHelpers.Scale (p2 - p1, ratio2);
 
                 var half1 = new Polygon (Vertices.GetRange (edge1 + 1, edge2 - edge1));
                 half1.Vertices.Insert (0, point1);
@@ -452,7 +454,7 @@ namespace Town.Geom
         {
             var v2 = GetNextVertex (v1);
 
-            var n = Vector2.Scale (Vector2.Normalize (Vector2.Rotate90 (v2 - v1)), amount);
+            var n = GeometryHelpers.Scale (GeometryHelpers.Normalize (GeometryHelpers.Rotate90 (v2 - v1)), amount);
 
             return Cut (v1 + n, v2 + n, 0).First ();
         }
@@ -468,7 +470,7 @@ namespace Town.Geom
             var sinB = Math.Sin (angle);
             var vx = d.x * cosB - d.y * sinB;
             var vy = d.y * cosB + d.x * sinB;
-            var p2 = new Vector2 (p1.x - vy, p1.y + vx);
+            var p2 = new Vector2 ((float)(p1.x - vy), (float)(p1.y + vx));
 
             return Cut (p1, p2, gap);
         }
@@ -504,7 +506,7 @@ namespace Town.Geom
 
         public Polygon Rotate (float angle)
         {
-            return new Polygon (Vertices.Select (vertex => vertex.RotateAoundPoint (Center, angle)));
+            return new Polygon (Vertices.Select (vertex => GeometryHelpers.RotateAoundPoint (vertex, Center, angle)));
         }
 
         public Polygon Translate (Vector2 amount)
@@ -537,12 +539,12 @@ namespace Town.Geom
             var prev = GetPreviousVertex (index);
             var next = GetNextVertex (index);
 
-            return Vector2.AngleThreePoints (prev, pt, next);
+            return GeometryHelpers.AngleThreePoints (prev, pt, next);
         }
 
         public Polygon SortPointsClockwise ()
         {
-            var sortedVertices = Vertices.OrderBy (v => (v - Center).Angle ()).ToList ();
+            var sortedVertices = Vertices.OrderBy (v => GeometryHelpers.Angle(v - Center)).ToList ();
             return new Polygon (sortedVertices);
         }
 
@@ -557,11 +559,11 @@ namespace Town.Geom
 
             var simplified = Vertices.Where ((v, i) => !toRemove.Contains (i)).Distinct ().ToList ();
 
-            var tooClose = simplified.Where (v1 => simplified.Where (v2 => !v2.Equals (v1)).Any (v2 => (v2 - v1).Length < distanceThreshhold)).ToList ();
+            var tooClose = simplified.Where (v1 => simplified.Where (v2 => !v2.Equals (v1)).Any (v2 => (v2 - v1).magnitude < distanceThreshhold)).ToList ();
             while (tooClose.Any ())
             {
                 simplified.Remove (tooClose.First ());
-                tooClose = simplified.Where (v1 => simplified.Where (v2 => !v2.Equals (v1)).Any (v2 => (v2 - v1).Length < distanceThreshhold)).ToList ();
+                tooClose = simplified.Where (v1 => simplified.Where (v2 => !v2.Equals (v1)).Any (v2 => (v2 - v1).magnitude < distanceThreshhold)).ToList ();
             }
 
             return new Polygon (simplified);
@@ -580,7 +582,7 @@ namespace Town.Geom
                 var v0 = v1;
                 v1 = v2;
                 v2 = Vertices[(v + 1) % len];
-                newVertices.Add (Vector2.SmoothVertex (v1, v0, v2));
+                newVertices.Add (GeometryHelpers.SmoothVertex (v1, v0, v2));
             }
 
             return new Polygon (newVertices);
@@ -588,13 +590,13 @@ namespace Town.Geom
 
         public Polygon RectangleInside ()
         {
-            var p1 = Vector2.Zero;
-            var p2 = Vector2.Zero;
+            var p1 = Vector2.zero;
+            var p2 = Vector2.zero;
             var maxLength = float.MinValue;
 
             ForEachEdge ((a, b, i) =>
             {
-                var len = (a - b).Length;
+                var len = (a - b).magnitude;
                 if (len > maxLength)
                 {
                     p1 = a;
@@ -603,13 +605,13 @@ namespace Town.Geom
                 }
             });
 
-            var rotated = Rotate ((p1 - p2).Angle ());
+            var rotated = Rotate (GeometryHelpers.Angle(p1 - p2));
             var minY = rotated.Vertices.Min (v => v.y);
             var greatestDistance = rotated.Vertices.Max (v => v.y - minY);
 
-            var normal = (p2 - p1).Rotate90 ().Normalize ();
-            var newHouse = new Polygon (p1, p2, p2 - Vector2.Scale (normal, greatestDistance),
-                p1 - Vector2.Scale (normal, greatestDistance)).ZoomShrink (0.2f);
+            var normal = GeometryHelpers.Rotate90(p2 - p1).normalized;
+            var newHouse = new Polygon (p1, p2, p2 - GeometryHelpers.Scale (normal, greatestDistance),
+                p1 - GeometryHelpers.Scale (normal, greatestDistance)).ZoomShrink (0.2f);
 
             newHouse = newHouse.Translate (newHouse.Center - Center);
 
@@ -621,7 +623,7 @@ namespace Town.Geom
             var newVertices = Vertices.Select (v =>
             {
                 var d = Center - v;
-                return v + Vector2.Scale (d, amount);
+                return v + GeometryHelpers.Scale (d, amount);
             }).ToList ();
             return new Polygon (newVertices);
         }

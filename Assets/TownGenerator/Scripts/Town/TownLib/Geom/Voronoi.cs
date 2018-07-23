@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Town.Geom
 {
@@ -37,7 +38,7 @@ namespace Town.Geom
          **/
         public void AddPoint (Vector2 point)
         {
-            var toSplit = Enumerable.Where (Triangles, tr => (point - tr.C).Length < tr.R).ToList ();
+            var toSplit = Enumerable.Where (Triangles, tr => (point - tr.C).magnitude < tr.R).ToList ();
 
             if (toSplit.Any ())
             {
@@ -235,7 +236,7 @@ namespace Town.Geom
                 (dy2 - dx2 * tg1);
 
             C = new Vector2 (x2 + dx2 * t2, y2 + dy2 * t2);
-            R = (C - p1).Length;
+            R = (C - p1).magnitude;
         }
 
         public bool HasEdge (Vector2 a, Vector2 b)
@@ -270,7 +271,7 @@ namespace Town.Geom
             {
                 c = c + v.C;
             }
-            return Vector2.Scale (c, 1f / Vertices.Count);
+            return GeometryHelpers.Scale (c, 1f / Vertices.Count);
         }
 
         public bool Borders (Region r)

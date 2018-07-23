@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Town.Geom;
-
+using UnityEngine;
 namespace Town
 {
     public class Topology
@@ -77,7 +76,7 @@ namespace Town
 
                     if (n0 != null && n1 != null)
                     {
-                        n0.Link(n1, (v0 - v1).Length);
+                        n0.Link(n1, (v0 - v1).magnitude);
                     }
                 }
             }
